@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-build.py — 把考古題 PDF 解析成結構化題庫，並內嵌進 期貨刷題.html。
+build.py — 把考古題 PDF 解析成結構化題庫，並內嵌進 index.html。
 
 用法：
-    python build.py            # 解析所有 PDF、驗證、產生 期貨刷題.html
+    python build.py            # 解析所有 PDF、驗證、產生 index.html
     python build.py --check    # 只解析＋驗證＋印樣本，不產生 HTML
 
 命名規則：題目檔 xxxxx.pdf（例 11401），答案檔 xxxxxa.pdf。
@@ -22,7 +22,7 @@ except Exception:
     pass
 
 ROOT = Path(__file__).resolve().parent
-HTML_OUT = ROOT / "期貨刷題.html"
+HTML_OUT = ROOT / "index.html"
 TEMPLATE = ROOT / "template.html"
 
 SUBJECT_CANON = {
