@@ -40,10 +40,11 @@ NOISE = [
 ]
 
 
-def pdftext(path: Path) -> str:
-    # -layout 保留物理排版：短選項並排在同一行時順序才不會被打亂
+def pdftext(path: Path, mode: str = "layout") -> str:
+    # 不同年份排版不同：layout 適合單欄、raw 適合雙欄、default 為保底
+    flags = {"layout": ["-layout"], "raw": ["-raw"], "default": []}[mode]
     r = subprocess.run(
-        ["pdftotext", "-enc", "UTF-8", "-layout", str(path), "-"],
+        ["pdftotext", "-enc", "UTF-8", *flags, str(path), "-"],
         capture_output=True, text=True, encoding="utf-8",
     )
     if r.returncode != 0:
@@ -74,22 +75,32 @@ def remove_noise(block: str) -> str:
     )
 
 
+def find_marker(chunk: str, L: str):
+    """回傳 (邊界start, 內容start)。邊界start 含左括號（給上一選項當結尾用）；找不到回傳 (-1,-1)。"""
+    i = chunk.find(f"({L})")          # 正常標記 (X)
+    if i >= 0:
+        return i, i + 3
+    m = re.search(r"(?:^|\n)\s*" + L + r"\)", chunk)  # 容錯：來源漏左括號、行首的「X)」
+    if m:
+        return m.end() - 2, m.end()
+    return -1, -1
+
+
 def parse_one(num: int, chunk: str) -> dict:
     # 選項可能兩欄排列 (A)(C)/(B)(D)，順序不一定 A<B<C<D；
     # 因此抓出四個標記的「位置」，依位置排序後，每個選項取到下一個標記為止。
-    pos = {}
+    start, after = {}, {}
     for L in "ABCD":
-        i = chunk.find(f"({L})")
-        if i < 0:
+        s, e = find_marker(chunk, L)
+        if s < 0:
             raise ValueError(f"第 {num} 題找不到選項 ({L})")
-        pos[L] = i
-    order = sorted("ABCD", key=lambda L: pos[L])
-    stem = clean(chunk[: pos[order[0]]])
+        start[L], after[L] = s, e
+    order = sorted("ABCD", key=lambda L: start[L])
+    stem = clean(chunk[: start[order[0]]])
     opts = {}
     for idx, L in enumerate(order):
-        start = pos[L] + 3
-        end = pos[order[idx + 1]] if idx + 1 < len(order) else len(chunk)
-        opts[L] = clean(chunk[start:end])
+        end = start[order[idx + 1]] if idx + 1 < len(order) else len(chunk)
+        opts[L] = clean(chunk[after[L]:end])
     return {"no": num, "stem": stem, "options": opts}
 
 
@@ -135,6 +146,46 @@ def parse_answers(text: str) -> dict:
     return result
 
 
+# 不同年份排版不一（單欄／雙欄），逐一嘗試抽取模式，取第一個能完整解析 50×2 題的
+EXTRACT_MODES = ["layout", "raw", "default"]
+
+
+def robust_questions(qpdf: Path):
+    errors = []
+    for mode in EXTRACT_MODES:
+        try:
+            subs = dict(split_subjects(pdftext(qpdf, mode)))
+            out = {}
+            for subj in ("法規", "理實"):
+                if subj not in subs:
+                    raise ValueError(f"缺少科目「{subj}」")
+                qs = parse_questions(subs[subj])
+                if len(qs) != 50:
+                    raise ValueError(f"{subj} 題數 {len(qs)}≠50")
+                for q in qs:
+                    if any(not q["options"][k] for k in "ABCD"):
+                        raise ValueError(f"{subj} 第{q['no']}題有空選項")
+                out[subj] = qs
+            return out, mode
+        except Exception as e:
+            errors.append(f"{mode}={e}")
+    raise ValueError("題目檔各排版模式皆無法解析（" + " ; ".join(errors) + "）")
+
+
+def robust_answers(apdf: Path):
+    errors = []
+    for mode in EXTRACT_MODES:
+        try:
+            ans = parse_answers(pdftext(apdf, mode))
+            for subj in ("法規", "理實"):
+                if set(ans.get(subj, {})) != set(range(1, 51)):
+                    raise ValueError(f"{subj} 答案題號不齊")
+            return ans, mode
+        except Exception as e:
+            errors.append(f"{mode}={e}")
+    raise ValueError("答案檔各排版模式皆無法解析（" + " ; ".join(errors) + "）")
+
+
 # ---------- 單一考試組裝＋驗證 ----------
 def build_exam(code: str):
     qpdf = ROOT / f"{code}.pdf"
@@ -145,17 +196,13 @@ def build_exam(code: str):
     year, session = int(code[:3]), int(code[3:])
     label = f"{year}年第{session}次"
 
-    subjects = dict(split_subjects(pdftext(qpdf)))
-    answers = parse_answers(pdftext(apdf))
+    subjects, qmode = robust_questions(qpdf)
+    answers, amode = robust_answers(apdf)
 
-    exam = {"code": code, "label": label, "subjects": {}}
+    exam = {"code": code, "label": label, "qmode": qmode, "amode": amode, "subjects": {}}
     report = []
     for subj in ("法規", "理實"):
-        if subj not in subjects:
-            raise ValueError(f"{code}: 題目檔缺少科目「{subj}」")
-        if subj not in answers:
-            raise ValueError(f"{code}: 答案檔缺少科目「{subj}」")
-        qs = parse_questions(subjects[subj])
+        qs = subjects[subj]
         ans = answers[subj]
 
         # 嚴格驗證
@@ -210,6 +257,8 @@ def main():
             name = "期貨交易法規" if subj == "法規" else "期貨交易理論與實務"
             print(f"  {code}  {name:<9}  {n} 題  ✓")
             total += n
+        if (exam["qmode"], exam["amode"]) != ("layout", "layout"):
+            print(f"        （{code} 排版：題目={exam['qmode']}、答案={exam['amode']}）")
         exams.append(exam)
     print("=" * 56)
     print(f"題庫解析完成：{len(exams)} 次考試 / {total} 題")
