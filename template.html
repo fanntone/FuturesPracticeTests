@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期貨業務員 考題練習</title>
+<style>
+  :root{
+    --bg:#eef1ee; --card:#fff; --ink:#1b2a24; --muted:#6c7a72;
+    --line:#e2e8e3; --brand:#157a5b; --brand-d:#0f6249; --brand-soft:#e7f3ee;
+    --ok:#1f9d57; --ok-bg:#e7f7ee; --bad:#d8443a; --bad-bg:#fdecea;
+    --shadow:0 6px 22px rgba(20,40,32,.07);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Microsoft JhengHei","PingFang TC","Helvetica Neue",Arial,sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  a{text-decoration:none;color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 18px 60px}
+
+  /* 導覽列 */
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 16px;box-shadow:var(--shadow);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;
+    font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .bname{font-weight:800;font-size:16px;line-height:1.2}
+  .btag{font-size:11px;color:var(--muted)}
+  .navlinks{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .navlinks a{padding:8px 13px;border-radius:9px;color:var(--muted);font-size:14px;
+    cursor:pointer;font-weight:600;transition:.12s;position:relative}
+  .navlinks a:hover{background:var(--brand-soft);color:var(--brand-d)}
+  .navlinks a.on{background:var(--brand);color:#fff}
+  .navlinks .badge{font-size:11px;background:#fff;color:var(--brand-d);border-radius:99px;
+    padding:0 6px;margin-left:5px;font-weight:800}
+  .navlinks a.on .badge{background:rgba(255,255,255,.25);color:#fff}
+  .reload{border:1px solid var(--line);background:#fff;border-radius:9px;width:36px;height:34px;
+    cursor:pointer;color:var(--muted);font-size:16px}
+  .reload:hover{border-color:var(--brand);color:var(--brand)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px;box-shadow:var(--shadow)}
+  h1{font-size:21px;margin:6px 0 2px}
+
+  /* Hero */
+  .hero{display:grid;grid-template-columns:1fr 300px;gap:18px;margin-top:16px}
+  .hero .htitle{font-size:30px;font-weight:800;letter-spacing:.5px;margin:2px 0 10px}
+  .hero .hdesc{color:var(--muted);font-size:14px;max-width:460px}
+  .hero .hbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .stats{display:flex;flex-direction:column;gap:12px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:#fbfdfb}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .stat .v{font-size:25px;font-weight:800;color:var(--brand-d);line-height:1.3}
+  .stat .v small{font-size:14px;font-weight:700}
+
+  /* 功能卡格 */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:17px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:128px}
+  .fcard .ft{font-weight:800;font-size:16px;margin-bottom:5px}
+  .fcard .fd{color:var(--muted);font-size:13px;flex:1}
+  .fcard .flink{color:var(--brand-d);font-weight:700;font-size:13px;margin-top:10px;cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+  .fcard .flink:hover{color:var(--brand)}
+  .fcard ol{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+  .fcard ol li{margin:2px 0}
+
+  @media(max-width:880px){
+    .hero{grid-template-columns:1fr}
+    .stats{flex-direction:row;flex-wrap:wrap}
+    .stat{flex:1;min-width:130px}
+    .grid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:560px){ .grid{grid-template-columns:1fr} .bname{font-size:15px} }
+
+  /* 表單元件 */
+  label.lbl{display:block;font-weight:700;font-size:14px;margin:14px 0 8px}
+  select,input[type=number]{font-size:15px;padding:9px 11px;border:1px solid var(--line);
+    border-radius:9px;background:#fff;color:var(--ink);width:100%}
+  input[type=number]{width:110px}
+  .seg{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;
+    font-size:14px;cursor:pointer;user-select:none;transition:.12s}
+  .chip:hover{border-color:var(--brand)}
+  .chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;
+    border-radius:11px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;
+    background:var(--brand);color:#fff;transition:.12s}
+  .btn:hover{background:var(--brand-d)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-d)}
+  .btn.block{width:100%;margin-top:18px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    margin:16px 0 14px;flex-wrap:wrap}
+  .note{font-size:12px;color:var(--muted);margin-top:8px}
+  .hide{display:none}
+  .muted{color:var(--muted)}
+  .center{text-align:center}
+
+  /* 作答 */
+  .progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .progress > i{display:block;height:100%;background:var(--brand);width:0;transition:.25s}
+  .qmeta{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap}
+  .qstem{font-size:17px;font-weight:700;margin:4px 0 16px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:11px;
+    padding:12px 14px;cursor:pointer;background:#fff;transition:.12s;font-size:15px}
+  .opt:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .opt .k{font-weight:800;color:var(--brand);min-width:20px}
+  .opt.correct{border-color:var(--ok);background:var(--ok-bg)} .opt.correct .k{color:var(--ok)}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-bg)} .opt.wrong .k{color:var(--bad)}
+  .opt.locked{cursor:default}
+  .feedback{margin-top:16px;padding:12px 14px;border-radius:11px;font-weight:700;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--ok-bg);color:var(--ok)} .feedback.bad{background:var(--bad-bg);color:var(--bad)}
+  .feedback .small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:4px}
+  .scorebox{font-weight:700}
+  .big{font-size:40px;font-weight:800;text-align:center;margin:6px 0;color:var(--brand-d)}
+  .ans-ok{color:var(--ok);font-weight:700} .ans-bad{color:var(--bad);font-weight:700}
+
+  /* 列表（歷史 / 錯題本） */
+  .listitem{border-top:1px solid var(--line);padding:12px 0} .listitem:first-child{border-top:0}
+  .hrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .hl{font-weight:700} .hsub{font-size:12px;color:var(--muted)}
+  .hres{font-weight:800;color:var(--brand-d)} .hres.low{color:var(--bad)}
+  .empty{color:var(--muted);text-align:center;padding:26px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 導覽列 -->
+  <header class="nav">
+    <div class="brand">
+      <div class="logo">期</div>
+      <div>
+        <div class="bname">期貨業務員　考題練習</div>
+        <div class="btag" id="navtag">依官方歷屆試題建立 · 離線版</div>
+      </div>
+    </div>
+    <nav class="navlinks">
+      <a data-nav="home" class="on">首頁</a>
+      <a data-nav="basic">初階練習</a>
+      <a data-nav="adv">進階模擬</a>
+      <a data-nav="history">歷史紀錄</a>
+      <a data-nav="wrong">錯題本<span class="badge" id="navWrong">0</span></a>
+      <button class="reload" id="reloadBtn" title="重新整理">↻</button>
+    </nav>
+  </header>
+
+  <!-- ===== 首頁 ===== -->
+  <section id="home">
+    <div class="hero">
+      <div class="card">
+        <div class="htitle">期貨業務員　考題練習入口</div>
+        <div class="hdesc">整理官方歷屆試題，建議先用少量題目建立手感，再進入進階模擬。所有練習與成績紀錄只保存在本機，不需登入、不需連網。</div>
+        <div class="hbtns">
+          <button class="btn" data-go="basic">開始初階練習</button>
+          <button class="btn ghost" data-go="adv">進入進階模擬</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="l">官方歷屆題</div><div class="v" id="stTotal">0 <small>題</small></div></div>
+        <div class="stat"><div class="l">考試場次</div><div class="v" id="stExam">0 <small>次</small></div></div>
+        <div class="stat"><div class="l">測驗科目</div><div class="v">2 <small>科</small></div></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="fcard">
+        <div class="ft">初階練習</div>
+        <div class="fd">依年度、科目（法規／理論實務／混合）與作答題數篩選，可從 10、20 題或自訂題數開始，邊做邊對答案。</div>
+        <span class="flink" data-go="basic">前往練習 →</span>
+      </div>
+      <div class="fcard">
+        <div class="ft">進階模擬</div>
+        <div class="fd">不分年份，隨機抽法規 50 題＋理論與實務 50 題，模擬正式測驗的題數與配比。</div>
+        <span class="flink" data-go="adv">開始模擬 →</span>
+      </div>
+      <div class="fcard">
+        <div class="ft">歷史紀錄</div>
+        <div class="fd">每次測驗自動記錄答對題數與耗時，回頭檢視進步幅度與穩定度。</div>
+        <span class="flink" data-go="history">查看紀錄（<span id="histCount">0</span> 筆）→</span>
+      </div>
+      <div class="fcard">
+        <div class="ft">錯題本</div>
+        <div class="fd">答錯的題目自動收錄，下次出題優先複習，答對後自動移除。目前 <b id="wrongCount2">0</b> 題待複習。</div>
+        <span class="flink" data-go="wrong">複習錯題 →</span>
+      </div>
+      <div class="fcard">
+        <div class="ft">建議使用方式</div>
+        <ol>
+          <li>先用 10～20 題建立手感。</li>
+          <li>把不熟的題目交給錯題本，定期回頭複習。</li>
+          <li>考前再進入進階模擬，檢查兩科穩定度。</li>
+        </ol>
+      </div>
+      <div class="fcard">
+        <div class="ft">資料與說明</div>
+        <div class="fd">題目與解答來源為官方歷屆試題；解答為正確選項。所有紀錄僅保存在此裝置的瀏覽器中。</div>
+        <span class="flink" id="aboutClear">清空本機紀錄 →</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 初階設定 ===== -->
+  <section id="setupBasic" class="hide">
+    <div class="topbar"><h1>初階練習</h1><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <div class="card">
+      <label class="lbl">選擇年份（考試場次）</label>
+      <select id="yearSel"></select>
+      <label class="lbl">選擇科目</label>
+      <div class="seg" id="subjSeg">
+        <div class="chip on" data-subj="法規">期貨交易法規</div>
+        <div class="chip" data-subj="理實">期貨交易理論與實務</div>
+        <div class="chip" data-subj="混合">混合（各半）</div>
+      </div>
+      <label class="lbl">題數</label>
+      <div class="seg" id="countSeg">
+        <div class="chip" data-n="10">10</div>
+        <div class="chip on" data-n="20">20</div>
+        <div class="chip" data-n="30">30</div>
+        <div class="chip" data-n="50">50</div>
+        <div class="chip" data-n="custom">自訂</div>
+      </div>
+      <div id="customWrap" class="hide" style="margin-top:10px"><input type="number" id="customN" min="1" value="25"> 題</div>
+      <div class="note" id="poolNote"></div>
+      <button class="btn block" id="startBasic">開始作答</button>
+    </div>
+  </section>
+
+  <!-- ===== 進階設定 ===== -->
+  <section id="setupAdv" class="hide">
+    <div class="topbar"><h1>進階模擬</h1><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <div class="card">
+      <p>固定抽出 <b>期貨交易法規 50 題</b> ＋ <b>期貨交易理論與實務 50 題</b>，共 <b>100 題</b>，不分年份隨機抽取，錯題會優先納入。</p>
+      <div class="note" id="advNote"></div>
+      <button class="btn block" id="startAdv">開始作答</button>
+    </div>
+  </section>
+
+  <!-- ===== 作答 ===== -->
+  <section id="quiz" class="hide">
+    <div class="topbar">
+      <div class="scorebox">第 <span id="qIdx">1</span> / <span id="qTot">0</span> 題　·　答對 <span id="qScore">0</span>　·　⏱ <span id="qTime">00:00</span></div>
+      <button class="btn ghost" data-go="home">結束</button>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="card">
+      <div class="qmeta" id="qMeta"></div>
+      <div class="qstem" id="qStem"></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="feedback" id="qFeedback"></div>
+      <button class="btn block hide" id="nextBtn">下一題</button>
+    </div>
+  </section>
+
+  <!-- ===== 結算 ===== -->
+  <section id="result" class="hide">
+    <div class="topbar"><h1>測驗結果</h1><button class="btn ghost" data-go="home">回首頁</button></div>
+    <div class="card center">
+      <div class="muted" id="rTitle"></div>
+      <div class="big" id="rPct">0%</div>
+      <div>答對 <b id="rOk">0</b> / <span id="rTot">0</span> 題（得 <b id="rPoints">0</b> 分）　·　耗時 <b id="rTime">—</b></div>
+      <button class="btn block" id="againBtn">再做一組（相同設定）</button>
+    </div>
+    <div class="card" id="reviewCard" style="margin-top:14px">
+      <b>本次錯題檢討（<span id="rWrongN">0</span> 題）</b>
+      <div id="reviewList"></div>
+    </div>
+  </section>
+
+  <!-- ===== 歷史紀錄 ===== -->
+  <section id="history" class="hide">
+    <div class="topbar"><h1>歷史紀錄</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="clearHist">清空紀錄</button>
+        <button class="btn ghost" data-go="home">← 回首頁</button>
+      </div>
+    </div>
+    <div class="card" id="histSummary"></div>
+    <div class="card" style="margin-top:14px"><div id="histList"></div></div>
+  </section>
+
+  <!-- ===== 錯題本 ===== -->
+  <section id="wrong" class="hide">
+    <div class="topbar"><h1>錯題本</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="clearWrong">清空錯題本</button>
+        <button class="btn ghost" data-go="home">← 回首頁</button>
+      </div>
+    </div>
+    <div class="card"><div class="note" style="margin:0 0 6px">這些題目答錯後被收錄，下次出題會優先出現；在練習中答對即自動移除。</div><div id="wrongList"></div></div>
+  </section>
+
+</div>
+
+<script>
+/*__QUESTION_BANK__*/
+</script>
+<script>
+(function(){
+  "use strict";
+  const BANK = window.QUESTION_BANK;
+  const WRONG_KEY = "futquiz.wrong.v1";
+  const HIST_KEY  = "futquiz.history.v1";
+
+  const $ = id => document.getElementById(id);
+  const SECTIONS = ["home","setupBasic","setupAdv","quiz","result","history","wrong"];
+  const NAV_OF = {home:"home",setupBasic:"basic",setupAdv:"adv",quiz:null,result:null,history:"history",wrong:"wrong"};
+
+  // ---------- 儲存 ----------
+  function load(key){ try{ return JSON.parse(localStorage.getItem(key)||"[]"); }catch(e){ return []; } }
+  function save(key,v){ try{ localStorage.setItem(key, JSON.stringify(v)); }catch(e){} }
+  let wrongSet = new Set(load(WRONG_KEY));
+  function saveWrong(){ save(WRONG_KEY, [...wrongSet]); }
+  let history = load(HIST_KEY);
+  function pushHistory(rec){ history.unshift(rec); history = history.slice(0,100); save(HIST_KEY, history); }
+
+  // ---------- 畫面切換 ----------
+  function show(secId){
+    SECTIONS.forEach(s=> $(s).classList.toggle("hide", s!==secId));
+    const navKey = NAV_OF[secId];
+    document.querySelectorAll(".navlinks a").forEach(a=> a.classList.toggle("on", a.dataset.nav===navKey));
+    window.scrollTo(0,0);
+  }
+  const GO = { home:()=>{refreshHome();show("home");}, basic:()=>{fillYears();updatePoolNote();show("setupBasic");},
+    adv:()=>{ const la=allOfSubject("法規").length, fu=allOfSubject("理實").length;
+      $("advNote").textContent=`目前可抽題庫：法規 ${la} 題、理實 ${fu} 題`; show("setupAdv"); },
+    history:()=>{renderHistory();show("history");}, wrong:()=>{renderWrong();show("wrong");} };
+
+  // ---------- 工具 ----------
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function sample(a,n){return shuffle(a).slice(0,Math.max(0,n));}
+  function pickPriority(pool,n){
+    const w=pool.filter(q=>wrongSet.has(q.id)), r=pool.filter(q=>!wrongSet.has(q.id));
+    return w.length>=n ? sample(w,n) : sample(w,w.length).concat(sample(r,n-w.length));
+  }
+  function subjName(s){ return s==="法規"?"期貨交易法規":"期貨交易理論與實務"; }
+  function examByCode(c){ return BANK.exams.find(e=>e.code===c); }
+  function allOfSubject(s){ const o=[]; BANK.exams.forEach(e=>e.subjects[s].forEach(q=>o.push(q))); return o; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  function fmtSec(s){ const m=Math.floor(s/60), ss=s%60; return m?`${m} 分 ${ss} 秒`:`${ss} 秒`; }
+  function clk(s){ const m=Math.floor(s/60), ss=s%60; return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
+  function fmtDate(ts){ const d=new Date(ts), p=n=>String(n).padStart(2,"0");
+    return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+
+  // ---------- 首頁 ----------
+  function totalQuestions(){ return BANK.exams.reduce((a,e)=>a+e.subjects["法規"].length+e.subjects["理實"].length,0); }
+  function refreshHome(){
+    $("stTotal").innerHTML = totalQuestions()+' <small>題</small>';
+    $("stExam").innerHTML  = BANK.exams.length+' <small>次</small>';
+    $("histCount").textContent = history.length;
+    $("wrongCount2").textContent = wrongSet.size;
+    $("navWrong").textContent = wrongSet.size;
+    $("navtag").textContent = `共 ${BANK.exams.length} 次考試 · ${totalQuestions()} 題 · 離線版`;
+  }
+
+  // ---------- 初階設定 ----------
+  const basic = { subj:"法規", n:20, custom:false };
+  function fillYears(){ $("yearSel").innerHTML = BANK.exams.map(e=>`<option value="${e.code}">${e.label}</option>`).join(""); }
+  function basicPoolSize(){ const ex=examByCode($("yearSel").value);
+    return basic.subj==="混合" ? ex.subjects["法規"].length+ex.subjects["理實"].length : ex.subjects[basic.subj].length; }
+  function effectiveN(){ let n=basic.custom?parseInt($("customN").value||"0",10):basic.n;
+    return Math.max(1, Math.min(n, basicPoolSize())); }
+  function updatePoolNote(){
+    const max=basicPoolSize(), n=effectiveN(); let extra="";
+    if(basic.subj==="混合"){ const nl=Math.ceil(n/2), nf=n-nl; extra=`（法規 ${nl} 題＋理實 ${nf} 題）`; }
+    $("poolNote").textContent = `本場可選最多 ${max} 題，這次出 ${n} 題 ${extra}`;
+  }
+  function buildBasicQuiz(){
+    const ex=examByCode($("yearSel").value), n=effectiveN(); let picked;
+    if(basic.subj==="混合"){ const nl=Math.ceil(n/2), nf=n-nl;
+      picked=pickPriority(ex.subjects["法規"],nl).concat(pickPriority(ex.subjects["理實"],nf)); }
+    else picked=pickPriority(ex.subjects[basic.subj],n);
+    return { kind:"basic", title:`初階 · ${ex.label} · ${basic.subj==="混合"?"混合":subjName(basic.subj)}`, questions:shuffle(picked) };
+  }
+  function buildAdvQuiz(){
+    return { kind:"adv", title:"進階 · 不分年份 · 法規50＋理實50",
+      questions:shuffle(pickPriority(allOfSubject("法規"),50).concat(pickPriority(allOfSubject("理實"),50))) };
+  }
+
+  // ---------- 作答 ----------
+  let game=null, timer=null;
+  function startQuiz(built){
+    if(!built.questions.length){ alert("沒有可出的題目。"); return; }
+    game={ kind:built.kind, title:built.title, questions:built.questions, idx:0, correct:0, answers:[], answered:false, start:Date.now() };
+    $("qTot").textContent=game.questions.length;
+    show("quiz"); startTimer(); renderQuestion();
+  }
+  function startTimer(){
+    clearInterval(timer);
+    timer=setInterval(()=>{ $("qTime").textContent=clk(Math.floor((Date.now()-game.start)/1000)); },1000);
+    $("qTime").textContent="00:00";
+  }
+  function renderQuestion(){
+    const q=game.questions[game.idx];
+    $("qIdx").textContent=game.idx+1; $("qScore").textContent=game.correct;
+    $("bar").style.width=(game.idx/game.questions.length*100)+"%";
+    $("qMeta").innerHTML=`<span>${examByCode(q.year).label}</span><span>${subjName(q.subject)}　第 ${q.no} 題</span>`+
+      (wrongSet.has(q.id)?`<span style="color:#d8443a">★ 錯題本複習</span>`:"");
+    $("qStem").textContent=q.stem;
+    const opts=$("qOpts"); opts.innerHTML="";
+    ["A","B","C","D"].forEach(k=>{ const d=document.createElement("div");
+      d.className="opt"; d.innerHTML=`<span class="k">${k}</span><span>${escapeHtml(q.options[k])}</span>`;
+      d.onclick=()=>answer(k,d); opts.appendChild(d); });
+    $("qFeedback").className="feedback"; $("qFeedback").innerHTML=""; $("nextBtn").classList.add("hide");
+  }
+  function answer(choice){
+    const q=game.questions[game.idx]; if(game.answered) return; game.answered=true;
+    const correct=q.answer, isRight=choice===correct;
+    [...$("qOpts").children].forEach(c=>{ c.classList.add("locked"); c.onclick=null;
+      const k=c.querySelector(".k").textContent;
+      if(k===correct) c.classList.add("correct"); else if(k===choice) c.classList.add("wrong"); });
+    if(isRight) game.correct++;
+    game.answers.push({q,choice,isRight});
+    if(isRight){ if(wrongSet.has(q.id)){ wrongSet.delete(q.id); saveWrong(); } }
+    else{ wrongSet.add(q.id); saveWrong(); }
+    const fb=$("qFeedback"); fb.className="feedback show "+(isRight?"ok":"bad");
+    fb.innerHTML=isRight?`✓ 答對！　目前答對 ${game.correct} 題`
+      :`✗ 答錯。正解是 (${correct}) ${escapeHtml(q.options[correct])}<span class="small">已加入錯題本，下次會優先複習</span>`;
+    $("qScore").textContent=game.correct;
+    $("nextBtn").classList.remove("hide");
+    $("bar").style.width=((game.idx+1)/game.questions.length*100)+"%";
+  }
+  function nextQuestion(){ game.answered=false;
+    if(game.idx<game.questions.length-1){ game.idx++; renderQuestion(); } else finishQuiz(); }
+  function finishQuiz(){
+    clearInterval(timer);
+    const tot=game.questions.length, ok=game.correct, pct=Math.round(ok/tot*100);
+    const sec=Math.floor((Date.now()-game.start)/1000);
+    pushHistory({ ts:Date.now(), title:game.title, kind:game.kind, ok, tot, pct, sec });
+    $("rTitle").textContent=game.title; $("rPct").textContent=pct+"%";
+    $("rOk").textContent=ok; $("rTot").textContent=tot; $("rPoints").textContent=ok*2;
+    $("rTime").textContent=fmtSec(sec);
+    const wrongs=game.answers.filter(a=>!a.isRight);
+    $("rWrongN").textContent=wrongs.length;
+    $("reviewCard").style.display=wrongs.length?"":"none";
+    $("reviewList").innerHTML=wrongs.map(a=>{ const q=a.q;
+      return `<div class="listitem"><div class="hsub">${examByCode(q.year).label} · ${subjName(q.subject)} 第${q.no}題</div>
+        <div class="hl" style="margin:2px 0">${escapeHtml(q.stem)}</div>
+        <div>你選：<span class="ans-bad">(${a.choice}) ${escapeHtml(q.options[a.choice])}</span></div>
+        <div>正解：<span class="ans-ok">(${q.answer}) ${escapeHtml(q.options[q.answer])}</span></div></div>`; }).join("");
+    show("result");
+  }
+
+  // ---------- 歷史紀錄 ----------
+  function renderHistory(){
+    if(!history.length){ $("histSummary").innerHTML='<div class="empty">還沒有任何紀錄，完成一次測驗後會出現在這裡。</div>'; $("histList").innerHTML=""; return; }
+    const n=history.length, avg=Math.round(history.reduce((a,h)=>a+h.pct,0)/n);
+    const best=Math.max(...history.map(h=>h.pct));
+    $("histSummary").innerHTML=`<div class="hrow">
+      <div><div class="hsub">總測驗次數</div><div class="big" style="font-size:26px;margin:0">${n} 次</div></div>
+      <div><div class="hsub">平均正確率</div><div class="big" style="font-size:26px;margin:0">${avg}%</div></div>
+      <div><div class="hsub">最佳正確率</div><div class="big" style="font-size:26px;margin:0">${best}%</div></div></div>`;
+    $("histList").innerHTML=history.map(h=>`<div class="listitem"><div class="hrow">
+      <div><div class="hl">${escapeHtml(h.title)}</div>
+        <div class="hsub">${fmtDate(h.ts)}　·　耗時 ${fmtSec(h.sec)}</div></div>
+      <div style="text-align:right"><div class="hres ${h.pct<60?'low':''}">${h.pct}%</div>
+        <div class="hsub">答對 ${h.ok} / ${h.tot}</div></div></div></div>`).join("");
+  }
+
+  // ---------- 錯題本 ----------
+  function renderWrong(){
+    const items=[]; BANK.exams.forEach(e=>["法規","理實"].forEach(s=>e.subjects[s].forEach(q=>{ if(wrongSet.has(q.id)) items.push(q); })));
+    if(!items.length){ $("wrongList").innerHTML='<div class="empty">目前沒有錯題，繼續保持！</div>'; return; }
+    $("wrongList").innerHTML=items.map(q=>`<div class="listitem">
+      <div class="hsub">${examByCode(q.year).label} · ${subjName(q.subject)} 第${q.no}題</div>
+      <div class="hl" style="margin:2px 0">${escapeHtml(q.stem)}</div>
+      <div>正解：<span class="ans-ok">(${q.answer}) ${escapeHtml(q.options[q.answer])}</span></div></div>`).join("");
+  }
+
+  // ---------- 綁定 ----------
+  function bind(){
+    document.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=> GO[b.dataset.go]());
+    document.querySelectorAll(".navlinks a[data-nav]").forEach(a=> a.onclick=()=> GO[a.dataset.nav]());
+    $("reloadBtn").onclick=()=> location.reload();
+
+    $("subjSeg").querySelectorAll(".chip").forEach(c=> c.onclick=()=>{
+      $("subjSeg").querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+      c.classList.add("on"); basic.subj=c.dataset.subj; updatePoolNote(); });
+    $("countSeg").querySelectorAll(".chip").forEach(c=> c.onclick=()=>{
+      $("countSeg").querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); c.classList.add("on");
+      if(c.dataset.n==="custom"){ basic.custom=true; $("customWrap").classList.remove("hide"); }
+      else{ basic.custom=false; basic.n=parseInt(c.dataset.n,10); $("customWrap").classList.add("hide"); }
+      updatePoolNote(); });
+    $("customN").oninput=updatePoolNote; $("yearSel").onchange=updatePoolNote;
+
+    $("startBasic").onclick=()=> startQuiz(buildBasicQuiz());
+    $("startAdv").onclick=()=> startQuiz(buildAdvQuiz());
+    $("nextBtn").onclick=nextQuestion;
+    $("againBtn").onclick=()=> startQuiz(game.kind==="adv"?buildAdvQuiz():buildBasicQuiz());
+
+    $("clearWrong").onclick=()=>{ if(confirm("確定清空錯題本？")){ wrongSet=new Set(); saveWrong(); renderWrong(); refreshHome(); } };
+    $("clearHist").onclick=()=>{ if(confirm("確定清空所有歷史紀錄？")){ history=[]; save(HIST_KEY,history); renderHistory(); refreshHome(); } };
+    $("aboutClear").onclick=()=>{ if(confirm("將清空『錯題本』與『歷史紀錄』，題庫不受影響。確定？")){
+      wrongSet=new Set(); saveWrong(); history=[]; save(HIST_KEY,history); refreshHome(); alert("已清空本機紀錄。"); } };
+  }
+
+  // ---------- 啟動 ----------
+  if(!BANK||!BANK.exams||!BANK.exams.length){
+    document.body.innerHTML="<div style='padding:40px;text-align:center'>題庫尚未載入。請執行 build.py 產生正式檔案。</div>"; return;
+  }
+  bind(); refreshHome(); show("home");
+})();
+</script>
+</body>
+</html>
