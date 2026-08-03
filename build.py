@@ -8,10 +8,12 @@ build.py — 把考古題 PDF 解析成結構化題庫，並內嵌進 index.html
 
 命名規則：題目檔 xxxxx.pdf（例 11401），答案檔 xxxxxa.pdf。
 """
+import os
 import re
 import sys
 import glob
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -23,6 +25,30 @@ except Exception:
 
 ROOT = Path(__file__).resolve().parent
 HTML_OUT = ROOT / "index.html"
+
+
+def find_pdftotext() -> str:
+    """在 PATH 找 pdftotext；找不到就試 Git for Windows 內建的 mingw64 版本。
+
+    直接雙擊 .bat 或從 cmd/PowerShell 執行時，PATH 只含 Git\\cmd，
+    不含 Git\\mingw64\\bin，即使 Git Bash 裡用得到也會找不到指令。
+    """
+    found = shutil.which("pdftotext")
+    if found:
+        return found
+    for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")):
+        if not base:
+            continue
+        candidate = Path(base) / "Git" / "mingw64" / "bin" / "pdftotext.exe"
+        if candidate.exists():
+            return str(candidate)
+    raise RuntimeError(
+        "找不到 pdftotext（需要 Poppler）。請安裝 poppler 並加入 PATH，"
+        "或確認已安裝 Git for Windows（內附 pdftotext.exe）。"
+    )
+
+
+PDFTOTEXT = find_pdftotext()
 TEMPLATE = ROOT / "template.html"
 
 SUBJECT_CANON = {
@@ -44,7 +70,7 @@ def pdftext(path: Path, mode: str = "layout") -> str:
     # 不同年份排版不同：layout 適合單欄、raw 適合雙欄、default 為保底
     flags = {"layout": ["-layout"], "raw": ["-raw"], "default": []}[mode]
     r = subprocess.run(
-        ["pdftotext", "-enc", "UTF-8", *flags, str(path), "-"],
+        [PDFTOTEXT, "-enc", "UTF-8", *flags, str(path), "-"],
         capture_output=True, text=True, encoding="utf-8",
     )
     if r.returncode != 0:
