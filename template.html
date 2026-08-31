@@ -420,15 +420,30 @@
     window.scrollTo(0,0);
   }
   const GO = { home:()=>{refreshHome();show("home");}, basic:()=>{fillYears();updatePoolNote();show("setupBasic");},
-    adv:()=>{ const la=allOfSubject("法規").length, fu=allOfSubject("理實").length;
-      $("advNote").textContent=`目前可抽題庫：法規 ${la} 題、理實 ${fu} 題`; show("setupAdv"); },
+    adv:()=>{ const la=dedupe(allOfSubject("法規")).length, fu=dedupe(allOfSubject("理實")).length;
+      $("advNote").textContent=`目前可抽題庫（已排除跨年份重複題）：法規 ${la} 題、理實 ${fu} 題`; show("setupAdv"); },
     history:()=>{renderHistory();show("history");}, wrong:()=>{renderWrong();show("wrong");} };
 
   // ---------- 工具 ----------
   function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
   function sample(a,n){return shuffle(a).slice(0,Math.max(0,n));}
+  // 同一題會重複出現在不同年份（法規 400 題實際只有 330 題不重複），且各年份的 id 不同，
+  // 因此出題前先依「題幹＋四個選項」去重：每組隨機留一份，錯題本裡的那份優先留。
+  // 選項在不同年份可能被重新排序（正解代號也跟著變），故 key 與選項順序無關；
+  // 但「同題幹、選項內容不同」是不同題（如通用題幹「下列敘述何者不正確？」），必須保留。
+  function qKey(q){ const n=s=>String(s).replace(/\s+/g,"");
+    return n(q.stem)+"|"+["A","B","C","D"].map(k=>n(q.options[k])).sort().join("|"); }
+  function dedupe(pool){
+    const byKey=new Map();
+    shuffle(pool).forEach(q=>{
+      const k=qKey(q), cur=byKey.get(k);
+      if(!cur || (!wrongHas(cur.id) && wrongHas(q.id))) byKey.set(k,q);
+    });
+    return [...byKey.values()];
+  }
   function pickPriority(pool,n){
-    const w=pool.filter(q=>wrongHas(q.id)), r=pool.filter(q=>!wrongHas(q.id));
+    const uniq=dedupe(pool);
+    const w=uniq.filter(q=>wrongHas(q.id)), r=uniq.filter(q=>!wrongHas(q.id));
     return w.length>=n ? sample(w,n) : sample(w,w.length).concat(sample(r,n-w.length));
   }
   function subjName(s){ return s==="法規"?"期貨交易法規":"期貨交易理論與實務"; }
