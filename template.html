@@ -124,6 +124,41 @@
   .hl{font-weight:700} .hsub{font-size:12px;color:var(--muted)}
   .hres{font-weight:800;color:var(--brand-d)} .hres.low{color:var(--bad)}
   .empty{color:var(--muted);text-align:center;padding:26px 0}
+  /* 進階模擬（分科作答） */
+  .opt.picked{border-color:var(--brand);background:var(--brand-soft)}
+  .opt.picked .k{color:var(--brand-d)}
+  .navbtns{display:flex;gap:10px;margin-top:18px}
+  .navbtns .btn{flex:1}
+  .sheet{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .sheet i{font-style:normal;min-width:30px;height:27px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:7px;font-size:12px;color:var(--muted);cursor:pointer;background:#fff}
+  .sheet i:hover{border-color:var(--brand)}
+  .sheet i.done{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-d);font-weight:700}
+  .sheet i.cur{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+  ul.rulelist{margin:10px 0 0;padding-left:20px;color:var(--muted);font-size:13px}
+  ul.rulelist li{margin:3px 0}
+
+  /* 分科成績 */
+  .scorerow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  .scorebox2{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfdfb}
+  .scorebox2 .l{font-size:13px;color:var(--muted)}
+  .scorebox2 .v{font-size:34px;font-weight:800;color:var(--brand-d);line-height:1.2}
+  .scorebox2 .v.low{color:var(--bad)}
+  .scorebox2 .s{font-size:12px;color:var(--muted)}
+  .verdict{display:inline-block;border-radius:999px;padding:7px 22px;font-weight:800;font-size:16px}
+  .verdict.pass{background:var(--ok-bg);color:var(--ok)}
+  .verdict.fail{background:var(--bad-bg);color:var(--bad)}
+  .badge2{display:inline-block;border-radius:999px;padding:1px 9px;font-size:11px;font-weight:800;margin-left:7px;vertical-align:middle}
+  .badge2.pass{background:var(--ok-bg);color:var(--ok)} .badge2.fail{background:var(--bad-bg);color:var(--bad)}
+
+  /* 檢討／錯題本的完整選項 */
+  .subjhead{font-weight:800;font-size:15px;margin:4px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--brand-soft)}
+  .revopts{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+  .revopt{font-size:14px;padding:6px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted)}
+  .revopt.ok{border-color:var(--ok);background:var(--ok-bg);color:var(--ok);font-weight:700}
+  .revopt.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);font-weight:700}
+  .revopt .tag{font-size:11px;font-weight:800;margin-left:7px}
+  @media(max-width:560px){ .scorerow{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -174,7 +209,7 @@
       </div>
       <div class="fcard">
         <div class="ft">進階模擬</div>
-        <div class="fd">不分年份，隨機抽法規 50 題＋理論與實務 50 題，模擬正式測驗的題數與配比。</div>
+        <div class="fd">仿正式測驗分科施測：先考法規 50 題，作答完再考理論與實務 50 題，全部完成後才分別計分。</div>
         <span class="flink" data-go="adv">開始模擬 →</span>
       </div>
       <div class="fcard">
@@ -233,17 +268,35 @@
   <section id="setupAdv" class="hide">
     <div class="topbar"><h1>進階模擬</h1><button class="btn ghost" data-go="home">← 回首頁</button></div>
     <div class="card">
-      <p>固定抽出 <b>期貨交易法規 50 題</b> ＋ <b>期貨交易理論與實務 50 題</b>，共 <b>100 題</b>，不分年份隨機抽取，錯題會優先納入。</p>
+      <p>仿正式測驗流程：<b>先考「期貨交易法規」50 題</b>，作答完畢後<b>再考「期貨交易理論與實務」50 題</b>，共 100 題，不分年份隨機抽取，錯題會優先納入。</p>
+      <ul class="rulelist">
+        <li>作答期間<b>不公布答案</b>，兩科全部作答完畢後才分別計分。</li>
+        <li>每題 2 分，每科滿分 100 分，總分 200 分。</li>
+        <li>及格標準：<b>每科不低於 60 分</b>，且<b>總分達 140 分以上</b>。</li>
+        <li>同一科內可用「上一題」或下方答題卡回頭修改；換科後不能再回上一科。</li>
+        <li>未作答視同答錯。</li>
+      </ul>
       <div class="note" id="advNote"></div>
       <button class="btn block" id="startAdv">開始作答</button>
+    </div>
+  </section>
+
+  <!-- ===== 科目切換（進階模擬） ===== -->
+  <section id="advBreak" class="hide">
+    <div class="topbar"><h1>第一科作答完畢</h1></div>
+    <div class="card center">
+      <div class="muted" id="abDesc"></div>
+      <div class="note" id="abWarn"></div>
+      <button class="btn block" id="abNext">進入第二科：期貨交易理論與實務</button>
+      <button class="btn ghost block" id="abBack" style="margin-top:10px">← 回第一科檢查</button>
     </div>
   </section>
 
   <!-- ===== 作答 ===== -->
   <section id="quiz" class="hide">
     <div class="topbar">
-      <div class="scorebox">第 <span id="qIdx">1</span> / <span id="qTot">0</span> 題　·　答對 <span id="qScore">0</span>　·　⏱ <span id="qTime">00:00</span></div>
-      <button class="btn ghost" data-go="home">結束</button>
+      <div class="scorebox" id="scoreBox"></div>
+      <button class="btn ghost" id="quitBtn">結束</button>
     </div>
     <div class="progress"><i id="bar"></i></div>
     <div class="card">
@@ -251,18 +304,37 @@
       <div class="qstem" id="qStem"></div>
       <div class="opts" id="qOpts"></div>
       <div class="feedback" id="qFeedback"></div>
-      <button class="btn block hide" id="nextBtn">下一題</button>
+      <div class="navbtns">
+        <button class="btn ghost hide" id="prevBtn">← 上一題</button>
+        <button class="btn hide" id="nextBtn">下一題</button>
+      </div>
+      <div id="sheetWrap" class="hide">
+        <div class="note">本科答題卡（點選可跳題，作答後標示為綠色）</div>
+        <div class="sheet" id="qSheet"></div>
+      </div>
     </div>
   </section>
 
   <!-- ===== 結算 ===== -->
   <section id="result" class="hide">
     <div class="topbar"><h1>測驗結果</h1><button class="btn ghost" data-go="home">回首頁</button></div>
-    <div class="card center">
+    <div class="card center" id="rBasicCard">
       <div class="muted" id="rTitle"></div>
       <div class="big" id="rPct">0%</div>
       <div>答對 <b id="rOk">0</b> / <span id="rTot">0</span> 題（得 <b id="rPoints">0</b> 分）　·　耗時 <b id="rTime">—</b></div>
       <button class="btn block" id="againBtn">再做一組（相同設定）</button>
+    </div>
+
+    <div class="card center hide" id="rAdvCard">
+      <div class="muted">進階模擬 · 分科計分（每題 2 分，每科滿分 100 分）</div>
+      <div class="scorerow">
+        <div class="scorebox2"><div class="l">期貨交易法規</div><div class="v" id="rLawScore">0</div><div class="s" id="rLawSub">—</div></div>
+        <div class="scorebox2"><div class="l">期貨交易理論與實務</div><div class="v" id="rFutScore">0</div><div class="s" id="rFutSub">—</div></div>
+      </div>
+      <div>總分 <b id="rTotalScore">0</b> / 200　·　耗時 <b id="rAdvTime">—</b></div>
+      <div style="margin-top:12px"><span class="verdict" id="rVerdict">—</span></div>
+      <div class="note" id="rVerdictNote"></div>
+      <button class="btn block" id="againBtn2">再考一次</button>
     </div>
     <div class="card" id="reviewCard" style="margin-top:14px">
       <b>本次錯題檢討（<span id="rWrongN">0</span> 題）</b>
@@ -290,7 +362,13 @@
         <button class="btn ghost" data-go="home">← 回首頁</button>
       </div>
     </div>
-    <div class="card"><div class="note" style="margin:0 0 6px">這些題目答錯後被收錄，下次出題會優先出現；在練習中答對即自動移除。</div><div id="wrongList"></div></div>
+    <div class="card">
+      <div class="note" style="margin:0 0 12px">這些題目答錯後被收錄，下次出題會優先出現；在練習中答對即自動移除。依科目分開，每科由最新到最舊排列。</div>
+      <div class="subjhead">期貨交易法規（<span id="wrongLawN">0</span> 題）</div>
+      <div id="wrongLawList"></div>
+      <div class="subjhead" style="margin-top:22px">期貨交易理論與實務（<span id="wrongFutN">0</span> 題）</div>
+      <div id="wrongFutList"></div>
+    </div>
   </section>
 
 </div>
@@ -302,19 +380,36 @@
 (function(){
   "use strict";
   const BANK = window.QUESTION_BANK;
-  const WRONG_KEY = "futquiz.wrong.v1";
-  const HIST_KEY  = "futquiz.history.v1";
+  const WRONG_KEY_V1 = "futquiz.wrong.v1";
+  const WRONG_KEY    = "futquiz.wrong.v2";
+  const HIST_KEY     = "futquiz.history.v1";
+  const SUBJECTS = ["法規","理實"];
+  // 正式測驗規則：每科 50 題、每題 2 分；每科需 ≥60 分且總分 ≥140 分才及格
+  const ADV_PER_SUBJECT = 50, POINT = 2, PASS_SUBJECT = 60, PASS_TOTAL = 140;
 
   const $ = id => document.getElementById(id);
-  const SECTIONS = ["home","setupBasic","setupAdv","quiz","result","history","wrong"];
-  const NAV_OF = {home:"home",setupBasic:"basic",setupAdv:"adv",quiz:null,result:null,history:"history",wrong:"wrong"};
+  const SECTIONS = ["home","setupBasic","setupAdv","advBreak","quiz","result","history","wrong"];
+  const NAV_OF = {home:"home",setupBasic:"basic",setupAdv:"adv",advBreak:null,quiz:null,result:null,history:"history",wrong:"wrong"};
 
   // ---------- 儲存 ----------
-  function load(key){ try{ return JSON.parse(localStorage.getItem(key)||"[]"); }catch(e){ return []; } }
+  function loadJSON(key,dflt){ try{ const v=JSON.parse(localStorage.getItem(key)); return v==null?dflt:v; }catch(e){ return dflt; } }
   function save(key,v){ try{ localStorage.setItem(key, JSON.stringify(v)); }catch(e){} }
-  let wrongSet = new Set(load(WRONG_KEY));
-  function saveWrong(){ save(WRONG_KEY, [...wrongSet]); }
-  let history = load(HIST_KEY);
+
+  // 錯題本 v2：{ id:{ts,choice} }，保留加入時間與當時的選擇；v1 為純 id 陣列，載入時轉檔。
+  let wrongMap = loadJSON(WRONG_KEY, null);
+  if(!wrongMap || typeof wrongMap!=="object" || Array.isArray(wrongMap)){
+    const old = loadJSON(WRONG_KEY_V1, []);
+    wrongMap = {};
+    (Array.isArray(old)?old:[]).forEach(id=>{ wrongMap[id]={ts:0,choice:null}; });
+  }
+  function saveWrong(){ save(WRONG_KEY, wrongMap); }
+  function wrongHas(id){ return Object.prototype.hasOwnProperty.call(wrongMap,id); }
+  function wrongCount(){ return Object.keys(wrongMap).length; }
+  function wrongAdd(id,choice){ wrongMap[id]={ts:Date.now(),choice:choice||null}; }
+  function wrongDel(id){ delete wrongMap[id]; }
+
+  let history = loadJSON(HIST_KEY, []);
+  if(!Array.isArray(history)) history=[];
   function pushHistory(rec){ history.unshift(rec); history = history.slice(0,100); save(HIST_KEY, history); }
 
   // ---------- 畫面切換 ----------
@@ -333,7 +428,7 @@
   function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
   function sample(a,n){return shuffle(a).slice(0,Math.max(0,n));}
   function pickPriority(pool,n){
-    const w=pool.filter(q=>wrongSet.has(q.id)), r=pool.filter(q=>!wrongSet.has(q.id));
+    const w=pool.filter(q=>wrongHas(q.id)), r=pool.filter(q=>!wrongHas(q.id));
     return w.length>=n ? sample(w,n) : sample(w,w.length).concat(sample(r,n-w.length));
   }
   function subjName(s){ return s==="法規"?"期貨交易法規":"期貨交易理論與實務"; }
@@ -345,14 +440,32 @@
   function fmtDate(ts){ const d=new Date(ts), p=n=>String(n).padStart(2,"0");
     return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 
+  // ---------- 題目卡（結果檢討／錯題本共用：完整題幹＋四個選項） ----------
+  function optionsHtml(q, choice){
+    return '<div class="revopts">' + ["A","B","C","D"].map(k=>{
+      const isAns = k===q.answer, isPick = choice===k;
+      const cls = isAns ? "revopt ok" : (isPick ? "revopt bad" : "revopt");
+      const tag = isAns ? '<span class="tag">✓ 正解</span>'
+                : isPick ? '<span class="tag">✗ 你的選擇</span>' : "";
+      return `<div class="${cls}">(${k}) ${escapeHtml(q.options[k])}${tag}</div>`;
+    }).join("") + '</div>';
+  }
+  function questionCard(q, choice, extraSub){
+    const sub = `${examByCode(q.year).label} · ${subjName(q.subject)} 第${q.no}題` + (extraSub?`　·　${extraSub}`:"");
+    return `<div class="listitem">
+      <div class="hsub">${sub}</div>
+      <div class="hl" style="margin:3px 0 2px">${escapeHtml(q.stem)}</div>
+      ${optionsHtml(q,choice)}</div>`;
+  }
+
   // ---------- 首頁 ----------
   function totalQuestions(){ return BANK.exams.reduce((a,e)=>a+e.subjects["法規"].length+e.subjects["理實"].length,0); }
   function refreshHome(){
     $("stTotal").innerHTML = totalQuestions()+' <small>題</small>';
     $("stExam").innerHTML  = BANK.exams.length+' <small>次</small>';
     $("histCount").textContent = history.length;
-    $("wrongCount2").textContent = wrongSet.size;
-    $("navWrong").textContent = wrongSet.size;
+    $("wrongCount2").textContent = wrongCount();
+    $("navWrong").textContent = wrongCount();
     $("navtag").textContent = `共 ${BANK.exams.length} 次考試 · ${totalQuestions()} 題 · 離線版`;
   }
 
@@ -375,73 +488,196 @@
     else picked=pickPriority(ex.subjects[basic.subj],n);
     return { kind:"basic", title:`初階 · ${ex.label} · ${basic.subj==="混合"?"混合":subjName(basic.subj)}`, questions:shuffle(picked) };
   }
+  // 進階：法規在前、理實在後，兩科不混排（仿正式測驗分科施測）
   function buildAdvQuiz(){
-    return { kind:"adv", title:"進階 · 不分年份 · 法規50＋理實50",
-      questions:shuffle(pickPriority(allOfSubject("法規"),50).concat(pickPriority(allOfSubject("理實"),50))) };
+    const law = shuffle(pickPriority(allOfSubject("法規"), ADV_PER_SUBJECT));
+    const fut = shuffle(pickPriority(allOfSubject("理實"), ADV_PER_SUBJECT));
+    return { kind:"adv", title:`進階模擬 · 法規 ${law.length} 題＋理實 ${fut.length} 題`,
+      questions: law.concat(fut), lawN: law.length };
   }
 
   // ---------- 作答 ----------
   let game=null, timer=null;
   function startQuiz(built){
     if(!built.questions.length){ alert("沒有可出的題目。"); return; }
-    game={ kind:built.kind, title:built.title, questions:built.questions, idx:0, correct:0, answers:[], answered:false, start:Date.now() };
-    $("qTot").textContent=game.questions.length;
+    game={ kind:built.kind, title:built.title, questions:built.questions,
+      lawN: built.lawN||0, idx:0, correct:0, picks:built.questions.map(()=>null),
+      answered:false, start:Date.now() };
     show("quiz"); startTimer(); renderQuestion();
   }
   function startTimer(){
     clearInterval(timer);
-    timer=setInterval(()=>{ $("qTime").textContent=clk(Math.floor((Date.now()-game.start)/1000)); },1000);
-    $("qTime").textContent="00:00";
+    timer=setInterval(()=>{ const el=$("qTime"); if(el) el.textContent=clk(Math.floor((Date.now()-game.start)/1000)); },1000);
   }
+
+  // 進階模擬的「本科範圍」：第一科 [0,lawN)、第二科 [lawN,len)
+  function phaseStart(){ return game.idx < game.lawN ? 0 : game.lawN; }
+  function phaseEnd(){ return game.idx < game.lawN ? game.lawN : game.questions.length; }
+  function countUnanswered(s,e){ let n=0; for(let i=s;i<e;i++) if(!game.picks[i]) n++; return n; }
+
+  function updateScoreBox(){
+    const t = clk(Math.floor((Date.now()-game.start)/1000));
+    if(game.kind==="adv"){
+      const s=phaseStart(), e=phaseEnd(), tot=e-s;
+      $("scoreBox").innerHTML = `${subjName(game.questions[game.idx].subject)}　·　第 ${game.idx-s+1} / ${tot} 題　·　已作答 ${tot-countUnanswered(s,e)} / ${tot}　·　⏱ <span id="qTime">${t}</span>`;
+    }else{
+      $("scoreBox").innerHTML = `第 ${game.idx+1} / ${game.questions.length} 題　·　答對 ${game.correct}　·　⏱ <span id="qTime">${t}</span>`;
+    }
+  }
+  function renderSheet(){
+    const s=phaseStart(), e=phaseEnd(); let h="";
+    for(let i=s;i<e;i++){
+      const cls = i===game.idx ? "cur" : (game.picks[i] ? "done" : "");
+      h += `<i class="${cls}" data-i="${i}">${i-s+1}</i>`;
+    }
+    const sheet=$("qSheet"); sheet.innerHTML=h;
+    sheet.querySelectorAll("i").forEach(el=> el.onclick=()=>{ game.idx=parseInt(el.dataset.i,10); renderQuestion(); });
+  }
+  function paintPicked(){
+    const pick=game.picks[game.idx];
+    [...$("qOpts").children].forEach(c=> c.classList.toggle("picked", c.dataset.k===pick));
+  }
+
   function renderQuestion(){
     const q=game.questions[game.idx];
-    $("qIdx").textContent=game.idx+1; $("qScore").textContent=game.correct;
+    updateScoreBox();
     $("bar").style.width=(game.idx/game.questions.length*100)+"%";
-    $("qMeta").innerHTML=`<span>${examByCode(q.year).label}</span><span>${subjName(q.subject)}　第 ${q.no} 題</span>`+
-      (wrongSet.has(q.id)?`<span style="color:#d8443a">★ 錯題本複習</span>`:"");
+    $("qMeta").innerHTML = game.kind==="adv"
+      ? `<span>模擬測驗　·　${subjName(q.subject)}</span><span>作答期間不公布答案</span>`
+      : `<span>${examByCode(q.year).label}</span><span>${subjName(q.subject)}　第 ${q.no} 題</span>`+
+        (wrongHas(q.id)?`<span style="color:#d8443a">★ 錯題本複習</span>`:"");
     $("qStem").textContent=q.stem;
     const opts=$("qOpts"); opts.innerHTML="";
     ["A","B","C","D"].forEach(k=>{ const d=document.createElement("div");
-      d.className="opt"; d.innerHTML=`<span class="k">${k}</span><span>${escapeHtml(q.options[k])}</span>`;
-      d.onclick=()=>answer(k,d); opts.appendChild(d); });
-    $("qFeedback").className="feedback"; $("qFeedback").innerHTML=""; $("nextBtn").classList.add("hide");
+      d.className="opt"; d.dataset.k=k;
+      d.innerHTML=`<span class="k">${k}</span><span>${escapeHtml(q.options[k])}</span>`;
+      d.onclick=()=>choose(k); opts.appendChild(d); });
+    $("qFeedback").className="feedback"; $("qFeedback").innerHTML="";
+    if(game.kind==="adv"){
+      paintPicked(); renderSheet();
+      $("sheetWrap").classList.remove("hide");
+      $("prevBtn").classList.toggle("hide", game.idx<=phaseStart());
+      $("nextBtn").classList.remove("hide");
+      $("nextBtn").textContent = game.idx===phaseEnd()-1
+        ? (phaseEnd()===game.questions.length ? "交卷並計分" : "完成本科作答")
+        : "下一題";
+    }else{
+      game.answered=false;
+      $("sheetWrap").classList.add("hide");
+      $("prevBtn").classList.add("hide");
+      $("nextBtn").classList.add("hide");
+      $("nextBtn").textContent="下一題";
+    }
   }
-  function answer(choice){
+
+  function choose(k){
+    if(game.kind==="adv"){ game.picks[game.idx]=k; paintPicked(); renderSheet(); updateScoreBox(); return; }
     const q=game.questions[game.idx]; if(game.answered) return; game.answered=true;
-    const correct=q.answer, isRight=choice===correct;
+    const correct=q.answer, isRight=k===correct;
+    game.picks[game.idx]=k;
     [...$("qOpts").children].forEach(c=>{ c.classList.add("locked"); c.onclick=null;
-      const k=c.querySelector(".k").textContent;
-      if(k===correct) c.classList.add("correct"); else if(k===choice) c.classList.add("wrong"); });
-    if(isRight) game.correct++;
-    game.answers.push({q,choice,isRight});
-    if(isRight){ if(wrongSet.has(q.id)){ wrongSet.delete(q.id); saveWrong(); } }
-    else{ wrongSet.add(q.id); saveWrong(); }
+      if(c.dataset.k===correct) c.classList.add("correct"); else if(c.dataset.k===k) c.classList.add("wrong"); });
+    if(isRight){ game.correct++; if(wrongHas(q.id)){ wrongDel(q.id); saveWrong(); } }
+    else{ wrongAdd(q.id,k); saveWrong(); }
     const fb=$("qFeedback"); fb.className="feedback show "+(isRight?"ok":"bad");
     fb.innerHTML=isRight?`✓ 答對！　目前答對 ${game.correct} 題`
       :`✗ 答錯。正解是 (${correct}) ${escapeHtml(q.options[correct])}<span class="small">已加入錯題本，下次會優先複習</span>`;
-    $("qScore").textContent=game.correct;
+    updateScoreBox();
     $("nextBtn").classList.remove("hide");
     $("bar").style.width=((game.idx+1)/game.questions.length*100)+"%";
   }
-  function nextQuestion(){ game.answered=false;
-    if(game.idx<game.questions.length-1){ game.idx++; renderQuestion(); } else finishQuiz(); }
-  function finishQuiz(){
+
+  function onNext(){
+    if(game.kind!=="adv"){
+      if(!game.answered) return;
+      if(game.idx<game.questions.length-1){ game.idx++; renderQuestion(); } else finishBasic();
+      return;
+    }
+    if(game.idx < phaseEnd()-1){ game.idx++; renderQuestion(); return; }
+    if(phaseEnd()===game.questions.length){
+      const un=countUnanswered(phaseStart(),phaseEnd());
+      if(un && !confirm(`第二科還有 ${un} 題未作答，未作答一律計為答錯。確定交卷？`)) return;
+      finishAdv(); return;
+    }
+    showAdvBreak();
+  }
+  function onPrev(){ if(game.kind==="adv" && game.idx>phaseStart()){ game.idx--; renderQuestion(); } }
+
+  function showAdvBreak(){
+    const un=countUnanswered(0,game.lawN);
+    $("abDesc").innerHTML = `第一科「期貨交易法規」共 ${game.lawN} 題，已作答 <b>${game.lawN-un}</b> 題。<br>`+
+      `接著進入第二科「期貨交易理論與實務」，共 ${game.questions.length-game.lawN} 題；兩科全部作答完畢後才會分別計分。`;
+    $("abWarn").textContent = un ? `注意：第一科尚有 ${un} 題未作答，一旦進入第二科就不能再回頭修改。`
+                                : "第一科已全部作答，可放心進入第二科。";
+    show("advBreak");
+  }
+
+  // ---------- 結算 ----------
+  function finishBasic(){
     clearInterval(timer);
     const tot=game.questions.length, ok=game.correct, pct=Math.round(ok/tot*100);
     const sec=Math.floor((Date.now()-game.start)/1000);
-    pushHistory({ ts:Date.now(), title:game.title, kind:game.kind, ok, tot, pct, sec });
+    pushHistory({ ts:Date.now(), title:game.title, kind:"basic", ok, tot, pct, sec });
+    $("rBasicCard").classList.remove("hide"); $("rAdvCard").classList.add("hide");
     $("rTitle").textContent=game.title; $("rPct").textContent=pct+"%";
-    $("rOk").textContent=ok; $("rTot").textContent=tot; $("rPoints").textContent=ok*2;
+    $("rOk").textContent=ok; $("rTot").textContent=tot; $("rPoints").textContent=ok*POINT;
     $("rTime").textContent=fmtSec(sec);
-    const wrongs=game.answers.filter(a=>!a.isRight);
-    $("rWrongN").textContent=wrongs.length;
-    $("reviewCard").style.display=wrongs.length?"":"none";
-    $("reviewList").innerHTML=wrongs.map(a=>{ const q=a.q;
-      return `<div class="listitem"><div class="hsub">${examByCode(q.year).label} · ${subjName(q.subject)} 第${q.no}題</div>
-        <div class="hl" style="margin:2px 0">${escapeHtml(q.stem)}</div>
-        <div>你選：<span class="ans-bad">(${a.choice}) ${escapeHtml(q.options[a.choice])}</span></div>
-        <div>正解：<span class="ans-ok">(${q.answer}) ${escapeHtml(q.options[q.answer])}</span></div></div>`; }).join("");
+    renderReview(game.questions.map((q,i)=>({q,choice:game.picks[i]})).filter(a=>a.choice!==a.q.answer), false);
     show("result");
+  }
+
+  function finishAdv(){
+    clearInterval(timer);
+    const sec=Math.floor((Date.now()-game.start)/1000);
+    const stat={"法規":{ok:0,tot:0},"理實":{ok:0,tot:0}};
+    const wrongs=[];
+    game.questions.forEach((q,i)=>{
+      const c=game.picks[i];
+      stat[q.subject].tot++;
+      if(c===q.answer){ stat[q.subject].ok++; if(wrongHas(q.id)) wrongDel(q.id); }
+      else{ wrongAdd(q.id,c); wrongs.push({q,choice:c}); }
+    });
+    saveWrong();
+    const law=stat["法規"], fut=stat["理實"];
+    const lawScore=law.ok*POINT, futScore=fut.ok*POINT, total=lawScore+futScore;
+    const passed = lawScore>=PASS_SUBJECT && futScore>=PASS_SUBJECT && total>=PASS_TOTAL;
+    const ok=law.ok+fut.ok, tot=law.tot+fut.tot;
+
+    pushHistory({ ts:Date.now(), title:game.title, kind:"adv", ok, tot,
+      pct:Math.round(ok/tot*100), sec,
+      adv:{ law:{ok:law.ok,tot:law.tot,score:lawScore}, fut:{ok:fut.ok,tot:fut.tot,score:futScore}, total, passed } });
+
+    $("rBasicCard").classList.add("hide"); $("rAdvCard").classList.remove("hide");
+    $("rLawScore").textContent=lawScore; $("rLawScore").className="v"+(lawScore<PASS_SUBJECT?" low":"");
+    $("rLawSub").textContent=`答對 ${law.ok} / ${law.tot} 題`;
+    $("rFutScore").textContent=futScore; $("rFutScore").className="v"+(futScore<PASS_SUBJECT?" low":"");
+    $("rFutSub").textContent=`答對 ${fut.ok} / ${fut.tot} 題`;
+    $("rTotalScore").textContent=total; $("rAdvTime").textContent=fmtSec(sec);
+    const v=$("rVerdict"); v.className="verdict "+(passed?"pass":"fail"); v.textContent=passed?"✓ 及格":"✗ 不及格";
+    const miss=[];
+    if(lawScore<PASS_SUBJECT) miss.push(`法規 ${lawScore} 分未達 ${PASS_SUBJECT} 分`);
+    if(futScore<PASS_SUBJECT) miss.push(`理實 ${futScore} 分未達 ${PASS_SUBJECT} 分`);
+    if(total<PASS_TOTAL) miss.push(`總分 ${total} 分未達 ${PASS_TOTAL} 分`);
+    $("rVerdictNote").textContent = passed
+      ? `及格標準：每科 ≥ ${PASS_SUBJECT} 分且總分 ≥ ${PASS_TOTAL} 分，兩項皆已達成。`
+      : `未達標項目：${miss.join("、")}。（及格標準：每科 ≥ ${PASS_SUBJECT} 分且總分 ≥ ${PASS_TOTAL} 分）`;
+    renderReview(wrongs, true);
+    show("result");
+  }
+
+  // 錯題檢討：進階依科目分段，兩者都列出完整題幹與四個選項
+  function renderReview(wrongs, grouped){
+    $("rWrongN").textContent=wrongs.length;
+    $("reviewCard").style.display = wrongs.length ? "" : "none";
+    const card = a => questionCard(a.q, a.choice, a.choice?null:"未作答");
+    if(!grouped){ $("reviewList").innerHTML = wrongs.map(card).join(""); return; }
+    let h="";
+    SUBJECTS.forEach(s=>{
+      const list=wrongs.filter(a=>a.q.subject===s);
+      h += `<div class="subjhead" style="margin-top:14px">${subjName(s)}（${list.length} 題）</div>`;
+      h += list.length ? list.map(card).join("") : '<div class="empty">本科全對，太強了！</div>';
+    });
+    $("reviewList").innerHTML=h;
   }
 
   // ---------- 歷史紀錄 ----------
@@ -449,25 +685,49 @@
     if(!history.length){ $("histSummary").innerHTML='<div class="empty">還沒有任何紀錄，完成一次測驗後會出現在這裡。</div>'; $("histList").innerHTML=""; return; }
     const n=history.length, avg=Math.round(history.reduce((a,h)=>a+h.pct,0)/n);
     const best=Math.max(...history.map(h=>h.pct));
+    const advs=history.filter(h=>h.kind==="adv"&&h.adv);
+    const passN=advs.filter(h=>h.adv.passed).length;
     $("histSummary").innerHTML=`<div class="hrow">
       <div><div class="hsub">總測驗次數</div><div class="big" style="font-size:26px;margin:0">${n} 次</div></div>
       <div><div class="hsub">平均正確率</div><div class="big" style="font-size:26px;margin:0">${avg}%</div></div>
-      <div><div class="hsub">最佳正確率</div><div class="big" style="font-size:26px;margin:0">${best}%</div></div></div>`;
-    $("histList").innerHTML=history.map(h=>`<div class="listitem"><div class="hrow">
-      <div><div class="hl">${escapeHtml(h.title)}</div>
-        <div class="hsub">${fmtDate(h.ts)}　·　耗時 ${fmtSec(h.sec)}</div></div>
-      <div style="text-align:right"><div class="hres ${h.pct<60?'low':''}">${h.pct}%</div>
-        <div class="hsub">答對 ${h.ok} / ${h.tot}</div></div></div></div>`).join("");
+      <div><div class="hsub">最佳正確率</div><div class="big" style="font-size:26px;margin:0">${best}%</div></div>
+      <div><div class="hsub">進階模擬及格</div><div class="big" style="font-size:26px;margin:0">${passN} / ${advs.length}</div></div></div>`;
+    $("histList").innerHTML=history.map(h=>{
+      if(h.kind==="adv" && h.adv){
+        const a=h.adv;
+        return `<div class="listitem"><div class="hrow">
+          <div><div class="hl">${escapeHtml(h.title)}<span class="badge2 ${a.passed?"pass":"fail"}">${a.passed?"及格":"不及格"}</span></div>
+            <div class="hsub">${fmtDate(h.ts)}　·　耗時 ${fmtSec(h.sec)}</div>
+            <div class="hsub">法規 ${a.law.score} 分（答對 ${a.law.ok}/${a.law.tot}）　·　理實 ${a.fut.score} 分（答對 ${a.fut.ok}/${a.fut.tot}）</div></div>
+          <div style="text-align:right"><div class="hres ${a.passed?"":"low"}">${a.total} 分</div>
+            <div class="hsub">總分 / 200</div></div></div></div>`;
+      }
+      return `<div class="listitem"><div class="hrow">
+        <div><div class="hl">${escapeHtml(h.title)}</div>
+          <div class="hsub">${fmtDate(h.ts)}　·　耗時 ${fmtSec(h.sec)}</div></div>
+        <div style="text-align:right"><div class="hres ${h.pct<60?"low":""}">${h.pct}%</div>
+          <div class="hsub">答對 ${h.ok} / ${h.tot}</div></div></div></div>`;
+    }).join("");
   }
 
-  // ---------- 錯題本 ----------
+  // ---------- 錯題本（依科目分開，各自由新到舊） ----------
   function renderWrong(){
-    const items=[]; BANK.exams.forEach(e=>["法規","理實"].forEach(s=>e.subjects[s].forEach(q=>{ if(wrongSet.has(q.id)) items.push(q); })));
-    if(!items.length){ $("wrongList").innerHTML='<div class="empty">目前沒有錯題，繼續保持！</div>'; return; }
-    $("wrongList").innerHTML=items.map(q=>`<div class="listitem">
-      <div class="hsub">${examByCode(q.year).label} · ${subjName(q.subject)} 第${q.no}題</div>
-      <div class="hl" style="margin:2px 0">${escapeHtml(q.stem)}</div>
-      <div>正解：<span class="ans-ok">(${q.answer}) ${escapeHtml(q.options[q.answer])}</span></div></div>`).join("");
+    const byId={};
+    BANK.exams.forEach(e=>SUBJECTS.forEach(s=>e.subjects[s].forEach(q=>{ byId[q.id]=q; })));
+    const groups={"法規":[],"理實":[]};
+    Object.keys(wrongMap).forEach(id=>{
+      const q=byId[id]; if(!q) return;
+      groups[q.subject].push({ q, rec:wrongMap[id] });
+    });
+    const targets={"法規":["wrongLawList","wrongLawN"],"理實":["wrongFutList","wrongFutN"]};
+    SUBJECTS.forEach(s=>{
+      const list=groups[s].sort((a,b)=>(b.rec.ts||0)-(a.rec.ts||0));
+      const listId=targets[s][0], countId=targets[s][1];
+      $(countId).textContent=list.length;
+      $(listId).innerHTML = list.length
+        ? list.map(it=>questionCard(it.q, it.rec.choice, it.rec.ts?`收錄於 ${fmtDate(it.rec.ts)}`:"舊紀錄")).join("")
+        : '<div class="empty">這科目前沒有錯題，繼續保持！</div>';
+    });
   }
 
   // ---------- 綁定 ----------
@@ -488,20 +748,25 @@
 
     $("startBasic").onclick=()=> startQuiz(buildBasicQuiz());
     $("startAdv").onclick=()=> startQuiz(buildAdvQuiz());
-    $("nextBtn").onclick=nextQuestion;
-    $("againBtn").onclick=()=> startQuiz(game.kind==="adv"?buildAdvQuiz():buildBasicQuiz());
+    $("nextBtn").onclick=onNext;
+    $("prevBtn").onclick=onPrev;
+    $("quitBtn").onclick=()=>{ if(confirm("結束後本次作答不會計分，確定離開？")){ clearInterval(timer); GO.home(); } };
+    $("abNext").onclick=()=>{ game.idx=game.lawN; show("quiz"); renderQuestion(); };
+    $("abBack").onclick=()=>{ game.idx=game.lawN-1; show("quiz"); renderQuestion(); };
+    const again=()=> startQuiz(game.kind==="adv"?buildAdvQuiz():buildBasicQuiz());
+    $("againBtn").onclick=again; $("againBtn2").onclick=again;
 
-    $("clearWrong").onclick=()=>{ if(confirm("確定清空錯題本？")){ wrongSet=new Set(); saveWrong(); renderWrong(); refreshHome(); } };
+    $("clearWrong").onclick=()=>{ if(confirm("確定清空錯題本？")){ wrongMap={}; saveWrong(); renderWrong(); refreshHome(); } };
     $("clearHist").onclick=()=>{ if(confirm("確定清空所有歷史紀錄？")){ history=[]; save(HIST_KEY,history); renderHistory(); refreshHome(); } };
     $("aboutClear").onclick=()=>{ if(confirm("將清空『錯題本』與『歷史紀錄』，題庫不受影響。確定？")){
-      wrongSet=new Set(); saveWrong(); history=[]; save(HIST_KEY,history); refreshHome(); alert("已清空本機紀錄。"); } };
+      wrongMap={}; saveWrong(); history=[]; save(HIST_KEY,history); refreshHome(); alert("已清空本機紀錄。"); } };
   }
 
   // ---------- 啟動 ----------
   if(!BANK||!BANK.exams||!BANK.exams.length){
     document.body.innerHTML="<div style='padding:40px;text-align:center'>題庫尚未載入。請執行 build.py 產生正式檔案。</div>"; return;
   }
-  bind(); refreshHome(); show("home");
+  saveWrong(); bind(); refreshHome(); show("home");
 })();
 </script>
 </body>
